@@ -65,3 +65,4 @@ dialog label.full { grid-column: 1 / -1; }
   #infoCard { top: auto; bottom: 40px; right: 8px; left: 8px; width: auto; }
 }
 #empty[hidden], #infoCard[hidden] { display: none; }
+[hidden] { display: none !important; }
