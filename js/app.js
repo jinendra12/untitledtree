@@ -61,9 +61,11 @@
   App.parentOf = function (id) {
     const byId = new Map(App.people.map((p) => [p.id, p]));
     const p = byId.get(id); if (!p) return null;
+    const hasParents = (x) => x && ((x.fatherId && byId.has(x.fatherId)) || (x.motherId && byId.has(x.motherId)));
     for (const q of [p, byId.get(p.spouseId)]) {
       if (!q) continue;
-      for (const par of [q.fatherId, q.motherId]) if (par && byId.has(par)) return par;
+      const pars = [q.fatherId, q.motherId].filter((id) => id && byId.has(id));
+      if (pars.length) return pars.find((id) => hasParents(byId.get(id))) || pars[0];
     }
     return null;
   };
