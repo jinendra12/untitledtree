@@ -172,10 +172,11 @@
     App.depth = Infinity; $('#depthSel').value = 'all';
     App.setRoot(FT.defaultRoot(App.people));
   });
-  $('#pngBtn').addEventListener('click', downloadSVG);
+  $('#pngBtn').addEventListener('click', downloadPNG);
   window.addEventListener('resize', () => App.fit(false));
 
-  function downloadSVG() {
+  // Save the whole fitted tree (not just what's on screen) as a sharp PNG image.
+  function downloadPNG() {
     if (!App.g) return;
     const b = App.g.node().getBBox(); const pad = 40;
     const clone = svgEl.cloneNode(true);
@@ -186,8 +187,25 @@
     const bg = clone.querySelector('rect.bg'); if (bg) { bg.setAttribute('x', b.x - pad); bg.setAttribute('y', b.y - pad); bg.setAttribute('width', b.width + 2 * pad); bg.setAttribute('height', b.height + 2 * pad); }
     // inline the computed styles we rely on
     const style = document.createElement('style'); style.textContent = document.getElementById('treeCss').textContent; clone.prepend(style);
-    const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'family-tree.svg'; a.click();
+    const W = b.width + 2 * pad, H = b.height + 2 * pad;
+    const scale = Math.max(1, Math.min(3, 5000 / Math.max(W, H))); // sharp, but within browser canvas limits
+    const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    const btn = $('#pngBtn'); const old = btn.textContent; btn.textContent = 'Saving…'; btn.disabled = true;
+    const done = () => { URL.revokeObjectURL(url); btn.textContent = old; btn.disabled = false; };
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = Math.round(W * scale); c.height = Math.round(H * scale);
+      const ctx = c.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0, W, H);
+      const root = App.people.find((p) => p.id === App.rootId);
+      const name = 'family-tree-' + (FT.displayName(root) || 'root').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.png';
+      c.toBlob((png) => {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(png); a.download = name; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000); done();
+      }, 'image/png');
+    };
+    img.onerror = () => { alert('Could not create the image.'); done(); };
+    img.src = url;
   }
 
   document.title = cfg.siteTitle; $('#siteTitle').textContent = cfg.siteTitle;
