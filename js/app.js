@@ -125,6 +125,11 @@
   $('#depthSel').addEventListener('change', (e) => { App.depth = e.target.value === 'all' ? Infinity : +e.target.value; App.render(); });
   document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => { App.view = b.dataset.view; S('ft.view', App.view); App.render(); }));
   $('#fitBtn').addEventListener('click', () => App.fit());
+  $('#rootBtn').addEventListener('click', () => {
+    App.rootId = FT.defaultRoot(App.people);
+    App.depth = Infinity; $('#depthSel').value = 'all';
+    closeInfo(); App.render();
+  });
   $('#pngBtn').addEventListener('click', downloadSVG);
   window.addEventListener('resize', () => App.fit(false));
 
