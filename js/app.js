@@ -78,12 +78,12 @@
     App.selectedId = p.id;
     const byId = new Map(App.people.map((x) => [x.id, x]));
     const kids = App.people.filter((k) => k.fatherId === p.id || k.motherId === p.id);
-    const link = (q) => (q ? `<a href="#" data-goto="${esc(q.id)}">${esc(q.name)}</a>` : '—');
+    const link = (q) => (q ? `<a href="#" data-goto="${esc(q.id)}">${esc(FT.displayName(q))}</a>` : '—');
     const parents = [byId.get(p.fatherId), byId.get(p.motherId)].filter(Boolean);
     $('#infoCard').innerHTML = `
       <button class="x" data-close aria-label="Close">×</button>
       ${p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="">` : ''}
-      <h3>${esc(p.name)}${p.deathYear ? ' <span class="muted">†</span>' : ''}</h3>
+      <h3>${esc(FT.displayName(p))}${p.deathYear ? ' <span class="muted">†</span>' : ''}</h3>
       <div class="muted">${esc(FT.lifespan(p))}${p.place ? ' · ' + esc(p.place) : ''}</div>
       <dl>
         <dt>Parents</dt><dd>${parents.length ? parents.map(link).join(' & ') : '—'}</dd>

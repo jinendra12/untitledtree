@@ -46,11 +46,11 @@ window.BasicTree = {
     node.append('rect').attr('class', (d) => 'stripe g-' + (d.n.person.gender || 'u'))
       .attr('x', -W / 2).attr('y', -H / 2).attr('width', 6).attr('height', H).attr('rx', 3);
     node.append('text').attr('class', 'name').attr('x', -W / 2 + 16).attr('y', -H / 2 + 20)
-      .text((d) => trunc(d.n.person.name || '(no name)', 24) + (d.n.person.deathYear ? ' †' : ''));
+      .text((d) => trunc(FT.displayName(d.n.person) || '(no name)', 24) + (d.n.person.deathYear ? ' †' : ''));
     node.append('text').attr('class', 'meta').attr('x', -W / 2 + 16).attr('y', -H / 2 + 37)
       .text((d) => [FT.lifespan(d.n.person), d.n.person.place].filter(Boolean).join(' · '));
     node.append('text').attr('class', 'spouse').attr('x', -W / 2 + 16).attr('y', -H / 2 + 54)
-      .text((d) => (d.n.spouse ? '⚭ ' + trunc(d.n.spouse.name, 22) : ''));
+      .text((d) => (d.n.spouse ? '⚭ ' + trunc(FT.displayName(d.n.spouse), 22) : ''));
     node.filter((d) => d.n.hidden > 0).append('text').attr('class', 'more').attr('x', W / 2 - 8).attr('y', -H / 2 + 54).attr('text-anchor', 'end')
       .text((d) => `+${d.n.hidden} ▾`);
     node.append('title').text((d) => d.n.person.name);

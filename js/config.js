@@ -14,4 +14,7 @@ window.FT_CONFIG = {
   localAdminPasscode: 'family123',
 
   siteTitle: 'Our Family Tree',
+
+  // Surnames hidden in the tree and info card (full names stay in the Sheet and admin table).
+  hideSurnames: ['Jain'],
 };

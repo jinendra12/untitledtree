@@ -131,12 +131,20 @@
   // deathYear '?' means: passed away, year not known.
   const lifespan = (p) => {
     if (!p) return '';
-    if (p.deathYear === '?') return p.birthYear ? `${p.birthYear} – Late` : 'Late';
+    if (p.deathYear === '?') return p.birthYear ? `b. ${p.birthYear}` : '';
     if (p.birthYear && p.deathYear) return `${p.birthYear} – ${p.deathYear}`;
     if (p.birthYear) return `b. ${p.birthYear}`;
     if (p.deathYear) return `d. ${p.deathYear}`;
     return '';
   };
 
-  window.FT = { FIELDS, normalize, newId, LocalAdapter, SheetsAdapter, toCSV, parseCSV, index, buildTree, defaultRoot, isDescendant, lifespan, countDescendants };
+  // Name as shown in the tree: drops a common family surname, e.g. "Rajendra Jain" -> "Rajendra".
+  const hidden = (cfg.hideSurnames || []).map((s) => s.toLowerCase());
+  const displayName = (p) => {
+    const parts = String((p && p.name) || '').trim().split(/\s+/);
+    if (parts.length > 1 && hidden.includes(parts[parts.length - 1].toLowerCase())) parts.pop();
+    return parts.join(' ');
+  };
+
+  window.FT = { displayName, FIELDS, normalize, newId, LocalAdapter, SheetsAdapter, toCSV, parseCSV, index, buildTree, defaultRoot, isDescendant, lifespan, countDescendants };
 })();
