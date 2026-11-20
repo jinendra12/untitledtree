@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Our Family Tree</title>
+  <link rel="icon" href="assets/tree.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style id="treeCss">
+    .tree text { font-family: Inter, system-ui, sans-serif; }
+    .tree.basic .bg { fill: #f7f4ee; }
+    .tree.basic .links path { fill: none; stroke: #b9ab95; stroke-width: 1.6; }
+    .tree.basic .card rect:first-child { fill: #fffdf8; stroke: #e2d8c6; stroke-width: 1.2; }
+    .tree.basic .card { cursor: pointer; }
+    .tree.basic .card:hover rect:first-child, .tree.basic .card.selected rect:first-child { stroke: #3f7d32; stroke-width: 2; }
+    .tree.basic .stripe.g-M { fill: #4f7cac; } .tree.basic .stripe.g-F { fill: #c2577a; } .tree.basic .stripe.g-u, .tree.basic .stripe.g- { fill: #a59a88; }
+    .tree.basic .name { font-size: 13px; font-weight: 600; fill: #2d2a25; }
+    .tree.basic .meta { font-size: 11px; fill: #7b7264; }
+    .tree.basic .spouse { font-size: 11px; fill: #3f7d32; }
+    .tree.basic .more { font-size: 11px; fill: #8a5a33; }
+    .tree.basic .deceased rect:first-child { fill: #f1ece3; }
+    .tree.organic .bark path, .tree.organic .bark circle { fill: url(#bark); stroke: #3d2614; stroke-width: 0.8; stroke-opacity: 0.45; }
+    .tree.organic .bark circle { stroke: none; }
+    .tree.organic .person { cursor: pointer; }
+    .tree.organic .fruit { fill: #fff7e2; stroke: #6b4423; stroke-width: 2; }
+    .tree.organic .deceased .fruit { fill: #f3dcc0; stroke: #9a5b2b; }
+    .tree.organic .root .fruit { fill: #ffe9b0; stroke-width: 3; }
+    .tree.organic .person:hover .fruit, .tree.organic .person.selected .fruit { stroke: #2f6a2a; stroke-width: 3.5; }
+    .tree.organic .initial { font-size: 9px; font-weight: 700; fill: #6b4423; pointer-events: none; }
+    .tree.organic .root .initial { font-size: 12px; }
+    .tree.organic .label text { paint-order: stroke; stroke: rgba(250,250,240,0.92); stroke-width: 4px; stroke-linejoin: round; }
+    .tree.organic .label .nm { font-size: 12.5px; font-weight: 600; fill: #2b2a22; }
+    .tree.organic .root .label .nm { font-family: Fraunces, Georgia, serif; font-size: 18px; }
+    .tree.organic .label .sub { font-size: 10.5px; fill: #6d6455; }
+    .tree.organic .label .more { fill: #8a5a33; }
+    .tree.organic .leaves use { opacity: 0.93; }
+    .tree.organic .sway .cluster { animation: sway 5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+    @keyframes sway { from { rotate: -2.5deg; } to { rotate: 2.5deg; } }
+    @media (prefers-reduced-motion: reduce) { .tree.organic .sway .cluster { animation: none; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="assets/tree.svg" alt="" width="28" height="28"><span id="siteTitle">Our Family Tree</span></div>
+    <div class="controls">
+      <label id="datasetWrap">Data
+        <select id="datasetSel"></select>
+      </label>
+      <label class="grow">Tree from
+        <input id="rootInput" list="peopleList" placeholder="Type a name…" autocomplete="off">
+      </label>
+      <label>Generations
+        <select id="depthSel"><option value="all">All</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+      </label>
+      <div class="seg" role="group" aria-label="View">
+        <button data-view="organic">🌳 Living tree</button>
+        <button data-view="basic">▦ Basic chart</button>
+      </div>
+      <button id="fitBtn" title="Fit to screen">⤢ Fit</button>
+      <button id="pngBtn" title="Download as SVG image">⇩ Save</button>
+      <button id="adminBtn" class="primary">⚙ Admin</button>
+    </div>
+  </header>
+
+  <main id="stage">
+    <svg id="treeSvg" role="img" aria-label="Family tree"></svg>
+    <div id="empty" hidden>No people yet. Open <b>Admin</b> and add the first person.</div>
+    <aside id="infoCard" hidden></aside>
+    <footer><span id="stats"></span><span id="status"></span></footer>
+  </main>
+  <datalist id="peopleList"></datalist>
+
+  <!-- Admin dashboard -->
+  <section id="adminPanel" hidden>
+    <div class="admin-head">
+      <div><h2>Admin dashboard</h2><div class="muted small" id="adminMode"></div></div>
+      <div class="row">
+        <button id="addBtn" class="primary">+ Add person</button>
+        <button id="exportCsv">Export CSV</button>
+        <button id="exportJson">Export JSON</button>
+        <label class="btn">Import CSV/JSON<input type="file" id="importFile" accept=".csv,.json" hidden></label>
+        <button id="resetBtn">Reset sample</button>
+        <button id="logoutBtn">Log out</button>
+        <button id="closeAdmin" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="row"><input id="adminSearch" type="search" placeholder="Search by name, id or place…"><span class="muted small" id="adminCount"></span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Sex</th><th>Born</th><th>Died</th><th>Father</th><th>Mother</th><th>Spouse</th><th></th></tr></thead>
+        <tbody id="adminRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <dialog id="loginDialog">
+    <form id="loginForm" method="dialog">
+      <h3>Admin login</h3>
+      <p class="muted small">Family members with the passcode can add and edit records.</p>
+      <input id="passInput" type="password" placeholder="Passcode" autocomplete="current-password">
+      <div class="err" id="loginErr"></div>
+      <div class="row end"><button value="cancel" formnovalidate>Cancel</button><button class="primary" value="ok">Log in</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="editDialog">
+    <form id="editForm" method="dialog">
+      <h3 id="editTitle">Edit</h3>
+      <div class="grid">
+        <label class="full">Full name<input name="name" required></label>
+        <label>Gender<select name="gender"><option value="">—</option><option value="M">Male</option><option value="F">Female</option></select></label>
+        <label>Place<input name="place"></label>
+        <label>Birth year<input name="birthYear" inputmode="numeric" pattern="\d{3,4}" placeholder="e.g. 1962"></label>
+        <label>Death year<input name="deathYear" inputmode="numeric" pattern="\d{3,4}" placeholder="leave empty if living"></label>
+        <label>Father<input name="fatherId" list="relList" placeholder="Search…" autocomplete="off"></label>
+        <label>Mother<input name="motherId" list="relList" placeholder="Search…" autocomplete="off"></label>
+        <label class="full">Spouse<input name="spouseId" list="relList" placeholder="Search…" autocomplete="off"></label>
+        <label class="full">Photo URL<input name="photoUrl" type="url" placeholder="https://…"></label>
+        <label class="full">Notes<textarea name="notes" rows="2"></textarea></label>
+      </div>
+      <datalist id="relList"></datalist>
+      <div class="err" id="formErr"></div>
+      <div class="row end"><button value="cancel" formnovalidate>Cancel</button><button class="primary" value="save">Save</button></div>
+    </form>
+  </dialog>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/samples.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/tree-basic.js"></script>
+  <script src="js/tree-organic.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

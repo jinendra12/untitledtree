@@ -1,0 +1,67 @@
+:root {
+  --bg: #f7f4ee; --panel: #fffdf8; --ink: #2d2a25; --muted: #7b7264; --line: #e4dccd;
+  --accent: #3f7d32; --accent-ink: #fff; --danger: #b4492a; --radius: 10px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font: 14px/1.4 Inter, system-ui, sans-serif; color: var(--ink); background: var(--bg); display: flex; flex-direction: column; }
+button, select, input, textarea, .btn { font: inherit; color: inherit; }
+button, .btn { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; cursor: pointer; white-space: nowrap; }
+button:hover, .btn:hover { border-color: #c9bca5; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button.danger { color: var(--danger); }
+select, input, textarea { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; min-width: 0; }
+.muted { color: var(--muted); } .small { font-size: 12px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .row.end { justify-content: flex-end; }
+.err { color: var(--danger); min-height: 1.2em; font-size: 13px; margin: 6px 0; }
+
+.topbar { display: flex; gap: 16px; align-items: center; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; z-index: 2; }
+.brand { display: flex; gap: 10px; align-items: center; font: 650 19px Fraunces, Georgia, serif; }
+.controls { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
+.controls label { display: flex; flex-direction: column; font-size: 11px; color: var(--muted); gap: 2px; }
+.controls label.grow input { width: 260px; max-width: 100%; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; }
+.seg button.active { background: #e6efdc; color: #2f6a2a; font-weight: 600; }
+
+#stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+#treeSvg { width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+#treeSvg:active { cursor: grabbing; }
+#empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 16px; }
+#stage footer { position: absolute; left: 12px; bottom: 10px; right: 12px; display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); pointer-events: none; }
+#stage footer span { background: rgba(255, 253, 248, .85); padding: 3px 8px; border-radius: 6px; }
+
+#infoCard { position: absolute; top: 14px; right: 14px; width: 300px; max-width: calc(100% - 28px); max-height: calc(100% - 60px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: 0 10px 30px rgba(60, 40, 10, .15); }
+#infoCard h3 { margin: 0 0 2px; font: 650 20px Fraunces, Georgia, serif; padding-right: 20px; }
+#infoCard img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; float: right; margin-left: 8px; }
+#infoCard dl { display: grid; grid-template-columns: 70px 1fr; gap: 6px 10px; margin: 14px 0; font-size: 13px; }
+#infoCard dt { color: var(--muted); } #infoCard dd { margin: 0; }
+#infoCard a { color: var(--accent); }
+#infoCard .x { position: absolute; top: 8px; right: 8px; border: 0; font-size: 20px; padding: 2px 8px; background: none; }
+
+#adminPanel { position: fixed; inset: 0; z-index: 10; background: var(--bg); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+#adminPanel[hidden] { display: none; }
+.admin-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.admin-head h2 { margin: 0; font: 650 22px Fraunces, Georgia, serif; }
+#adminSearch { width: 340px; max-width: 100%; }
+.table-wrap { flex: 1; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #efe8db; vertical-align: top; }
+th { position: sticky; top: 0; background: #f3eee4; font-weight: 600; font-size: 12px; color: var(--muted); }
+td.actions { white-space: nowrap; text-align: right; } td.actions button { padding: 3px 8px; font-size: 12px; margin-left: 4px; }
+
+dialog { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--panel); color: var(--ink); width: min(560px, calc(100% - 32px)); }
+dialog::backdrop { background: rgba(40, 30, 15, .35); }
+dialog h3 { margin: 0 0 12px; font: 650 20px Fraunces, Georgia, serif; }
+dialog .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+dialog label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+dialog label.full { grid-column: 1 / -1; }
+#passInput { width: 100%; }
+
+@media (max-width: 760px) {
+  .controls { justify-content: flex-start; }
+  .controls label.grow { flex: 1 1 100%; } .controls label.grow input { width: 100%; }
+  dialog .grid { grid-template-columns: 1fr; }
+  #infoCard { top: auto; bottom: 40px; right: 8px; left: 8px; width: auto; }
+}
+#empty[hidden], #infoCard[hidden] { display: none; }
