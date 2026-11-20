@@ -113,7 +113,7 @@
         <label>Gender<select name="gender"><option value="">—</option><option value="M">Male</option><option value="F">Female</option></select></label>
         <label>Place<input name="place"></label>
         <label>Birth year<input name="birthYear" inputmode="numeric" pattern="\d{3,4}" placeholder="e.g. 1962"></label>
-        <label>Death year<input name="deathYear" inputmode="numeric" pattern="\d{3,4}" placeholder="leave empty if living"></label>
+        <label>Death year<input name="deathYear" pattern="\d{3,4}|\?" placeholder="empty if living, ? if year unknown"></label>
         <label>Father<input name="fatherId" list="relList" placeholder="Search…" autocomplete="off"></label>
         <label>Mother<input name="motherId" list="relList" placeholder="Search…" autocomplete="off"></label>
         <label class="full">Spouse<input name="spouseId" list="relList" placeholder="Search…" autocomplete="off"></label>

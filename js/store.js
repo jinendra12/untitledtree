@@ -128,8 +128,10 @@
     return false;
   }
 
+  // deathYear '?' means: passed away, year not known.
   const lifespan = (p) => {
     if (!p) return '';
+    if (p.deathYear === '?') return p.birthYear ? `${p.birthYear} – Late` : 'Late';
     if (p.birthYear && p.deathYear) return `${p.birthYear} – ${p.deathYear}`;
     if (p.birthYear) return `b. ${p.birthYear}`;
     if (p.deathYear) return `d. ${p.deathYear}`;
