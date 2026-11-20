@@ -8,7 +8,7 @@
   if (qs.get('data')) S('ft.dataset', qs.get('data'));
   if (qs.get('view')) S('ft.view', qs.get('view'));
   const App = window.App = {
-    people: [], rootId: null, view: qs.get('view') || S('ft.view') || 'organic', depth: Infinity,
+    people: [], rootId: null, history: [], view: qs.get('view') || S('ft.view') || 'organic', depth: Infinity,
     dataset: qs.get('data') || S('ft.dataset') || 'family', selectedId: null,
     get sheets() { return cfg.mode === 'sheets' && !!cfg.sheetsUrl; },
   };
@@ -44,7 +44,28 @@
     const ms = Math.round(performance.now() - t0);
     $('#stats').textContent = `${n.descendants().length} shown · ${n.height + 1} generations · ${App.people.length} people in records · drawn in ${ms} ms`;
     document.querySelectorAll('[data-view]').forEach((b) => b.classList.toggle('active', b.dataset.view === App.view));
+    $('#backBtn').disabled = !App.history.length;
+    $('#upBtn').disabled = !App.parentOf(App.rootId);
+    $('#rootBtn').disabled = App.rootId === FT.defaultRoot(App.people);
     if (refit) App.fit(false); else d3.select(svgEl).call(zoom.transform, d3.zoomTransform(svgEl));
+  };
+
+  // Change the base person, remembering where we came from for "Back".
+  App.setRoot = function (id) {
+    if (!id || id === App.rootId) return;
+    if (App.rootId) App.history.push(App.rootId);
+    App.rootId = id;
+    closeInfo(); App.render();
+  };
+  // One generation up: this person's parent, or (for someone who married in) their spouse's parent.
+  App.parentOf = function (id) {
+    const byId = new Map(App.people.map((p) => [p.id, p]));
+    const p = byId.get(id); if (!p) return null;
+    for (const q of [p, byId.get(p.spouseId)]) {
+      if (!q) continue;
+      for (const par of [q.fatherId, q.motherId]) if (par && byId.has(par)) return par;
+    }
+    return null;
   };
 
   App.reload = async function () {
@@ -93,7 +114,7 @@
       </dl>
       <div class="row">
         <button class="primary" data-root="${esc(p.id)}">Tree from here</button>
-        ${parents.length ? `<button data-root="${esc(parents[0].id)}">Go up a level</button>` : ''}
+        ${App.parentOf(p.id) ? `<button data-root="${esc(App.parentOf(p.id))}">Tree from parents</button>` : ''}
         ${Admin.token ? `<button data-edit="${esc(p.id)}">Edit</button>` : ''}
       </div>`;
     $('#infoCard').hidden = false;
@@ -106,7 +127,7 @@
     if (!t) return; e.preventDefault();
     if (t.dataset.close !== undefined) return closeInfo();
     if (t.dataset.goto) return showInfo(App.people.find((p) => p.id === t.dataset.goto));
-    if (t.dataset.root) { App.rootId = t.dataset.root; closeInfo(); return App.render(); }
+    if (t.dataset.root) return App.setRoot(t.dataset.root);
     if (t.dataset.edit) Admin.edit(t.dataset.edit);
   });
 
@@ -119,15 +140,20 @@
 
   $('#rootInput').addEventListener('change', (e) => {
     const id = e.target.value.split(' · ').pop().trim();
-    if (App.people.some((p) => p.id === id)) { App.rootId = id; App.render(); }
+    if (App.people.some((p) => p.id === id)) App.setRoot(id);
   });
   $('#rootInput').addEventListener('focus', (e) => e.target.select());
   $('#depthSel').addEventListener('change', (e) => { App.depth = e.target.value === 'all' ? Infinity : +e.target.value; App.render(); });
   document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => { App.view = b.dataset.view; S('ft.view', App.view); App.render(); }));
   $('#fitBtn').addEventListener('click', () => App.fit());
   $('#rootBtn').addEventListener('click', () => {
-    App.rootId = FT.defaultRoot(App.people);
     App.depth = Infinity; $('#depthSel').value = 'all';
+    App.setRoot(FT.defaultRoot(App.people));
+  });
+  $('#upBtn').addEventListener('click', () => App.setRoot(App.parentOf(App.rootId)));
+  $('#backBtn').addEventListener('click', () => {
+    if (!App.history.length) return;
+    App.rootId = App.history.pop();
     closeInfo(); App.render();
   });
   $('#pngBtn').addEventListener('click', downloadSVG);
