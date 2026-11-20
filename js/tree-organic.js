@@ -3,6 +3,7 @@
 // (generation) gets a radius big enough that neighbours never crowd each other.
 (function () {
   const LIVE = ['#3f7d32', '#559a3f', '#6fb24c', '#2f6a2a', '#86c062', '#4a8c3a'];
+  const PINK = ['#e86a9a', '#f28fb4', '#d94f86', '#f6a9c6', '#c7477a', '#ef7fa8'];
   const AUTUMN = ['#d9822b', '#c9612b', '#e2aa3c', '#b4492a', '#e8c15a'];
 
   function hash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -111,7 +112,7 @@
           const dist = (10 + r() * (d.children ? 24 : 34)) * leafScale;
           const [lx, ly] = pos(ang, dist);
           const rot = (ang * 180) / Math.PI - 90 + (r() - 0.5) * 70;
-          const pal = dead ? AUTUMN : LIVE;
+          const pal = dead ? AUTUMN : d.data.person.gender === 'F' ? PINK : LIVE;
           cluster.append('use').attr('href', '#leaf')
             .attr('transform', `translate(${lx.toFixed(1)},${ly.toFixed(1)}) rotate(${rot.toFixed(0)}) scale(${((0.75 + r() * 0.6) * leafScale).toFixed(2)})`)
             .attr('fill', pal[Math.floor(r() * pal.length)]);
