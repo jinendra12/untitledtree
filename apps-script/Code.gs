@@ -12,11 +12,14 @@
  * Reading is public (anyone with the site link can view the tree).
  * Writing requires the ADMIN_TOKEN, which is checked here on Google's side.
  */
+// Leave empty when the script is opened from the Sheet (Extensions → Apps Script).
+// For a standalone script (script.new), put the Sheet's id from its URL here.
+const SPREADSHEET_ID = '';
 const SHEET_NAME = 'People';
 const HEADERS = ['id', 'name', 'gender', 'birthYear', 'deathYear', 'fatherId', 'motherId', 'spouseId', 'place', 'notes', 'photoUrl', 'updatedAt'];
 
 function sheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(SHEET_NAME);
   if (!sh) sh = ss.insertSheet(SHEET_NAME);
   if (sh.getLastRow() === 0) { sh.appendRow(HEADERS); sh.setFrozenRows(1); }
