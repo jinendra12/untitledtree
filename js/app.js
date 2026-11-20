@@ -28,7 +28,8 @@
   };
 
   App.render = function (refit = true) {
-    const label = (p) => `${p.name}${p.birthYear ? ' (' + p.birthYear + ')' : ''} · ${p.id}`;
+    const labels = App.searchLabels();
+    const label = (p) => labels.get(p.id);
     $('#peopleList').innerHTML = App.people.map((p) => `<option value="${esc(label(p))}"></option>`).join('');
     if (!App.people.find((p) => p.id === App.rootId)) App.rootId = FT.defaultRoot(App.people);
     const root = App.people.find((p) => p.id === App.rootId);
@@ -44,10 +45,26 @@
     const ms = Math.round(performance.now() - t0);
     $('#stats').textContent = `${n.descendants().length} shown · ${n.height + 1} generations · ${App.people.length} people in records · drawn in ${ms} ms`;
     document.querySelectorAll('[data-view]').forEach((b) => b.classList.toggle('active', b.dataset.view === App.view));
-    $('#backBtn').disabled = !App.history.length;
-    $('#upBtn').disabled = !App.parentOf(App.rootId);
-    $('#rootBtn').disabled = App.rootId === FT.defaultRoot(App.people);
     if (refit) App.fit(false); else d3.select(svgEl).call(zoom.transform, d3.zoomTransform(svgEl));
+  };
+
+  // Search shows names only. When two people share a name, add who they are, e.g. "Preeti (Nishant's wife)".
+  App.searchLabels = function () {
+    const byId = new Map(App.people.map((p) => [p.id, p]));
+    const count = {};
+    App.people.forEach((p) => { const n = FT.displayName(p); count[n] = (count[n] || 0) + 1; });
+    const labels = new Map(); const used = new Set();
+    for (const p of App.people) {
+      let l = FT.displayName(p) || '(no name)';
+      if (count[l] > 1) {
+        const sp = byId.get(p.spouseId), par = byId.get(p.fatherId) || byId.get(p.motherId);
+        if (par) l += ` (${FT.displayName(par)}'s ${p.gender === 'M' ? 'son' : p.gender === 'F' ? 'daughter' : 'child'})`;
+        else if (sp) l += ` (${FT.displayName(sp)}'s ${p.gender === 'M' ? 'husband' : 'wife'})`;
+      }
+      while (used.has(l)) l += ' ';
+      used.add(l); labels.set(p.id, l);
+    }
+    return labels;
   };
 
   // Change the base person, remembering where we came from for "Back".
@@ -141,8 +158,11 @@
   ds.addEventListener('change', () => { App.dataset = ds.value; S('ft.dataset', ds.value); App.rootId = null; closeInfo(); App.reload(); });
 
   $('#rootInput').addEventListener('change', (e) => {
-    const id = e.target.value.split(' · ').pop().trim();
-    if (App.people.some((p) => p.id === id)) App.setRoot(id);
+    const v = e.target.value.trim().toLowerCase();
+    const labels = App.searchLabels();
+    const hit = [...labels].find(([, l]) => l.trim().toLowerCase() === v)
+      || [...labels].find(([, l]) => l.trim().toLowerCase().startsWith(v));
+    if (hit) App.setRoot(hit[0]);
   });
   $('#rootInput').addEventListener('focus', (e) => e.target.select());
   $('#depthSel').addEventListener('change', (e) => { App.depth = e.target.value === 'all' ? Infinity : +e.target.value; App.render(); });
@@ -151,12 +171,6 @@
   $('#rootBtn').addEventListener('click', () => {
     App.depth = Infinity; $('#depthSel').value = 'all';
     App.setRoot(FT.defaultRoot(App.people));
-  });
-  $('#upBtn').addEventListener('click', () => App.setRoot(App.parentOf(App.rootId)));
-  $('#backBtn').addEventListener('click', () => {
-    if (!App.history.length) return;
-    App.rootId = App.history.pop();
-    closeInfo(); App.render();
   });
   $('#pngBtn').addEventListener('click', downloadSVG);
   window.addEventListener('resize', () => App.fit(false));
