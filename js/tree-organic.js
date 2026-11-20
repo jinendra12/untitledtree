@@ -128,13 +128,12 @@
         .text((d) => (d.data.person.name || '?').trim().charAt(0).toUpperCase());
 
       const label = node.append('g').attr('class', 'label');
-      const first = (n) => (n || '').split(' ')[0];
       label.each(function (d) {
         const l = d3.select(this);
         const p = d.data.person;
         const full = FT.displayName(p) || '(no name)';
         const name = full.length > 26 ? full.slice(0, 25) + '…' : full;
-        let sub = [FT.lifespan(p), d.data.spouse ? '& ' + first(FT.displayName(d.data.spouse)) : ''].filter(Boolean).join('  ');
+        let sub = [FT.lifespan(p), d.data.spouse ? '& ' + FT.displayName(d.data.spouse) : ''].filter(Boolean).join('  ');
         if (!d.children && d.depth > 0) {
           if (d.data.hidden) sub += `  +${d.data.hidden} more`;
           // outer twigs: radial labels, like names written along the leaves
